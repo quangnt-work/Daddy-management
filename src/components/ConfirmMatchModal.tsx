@@ -19,6 +19,7 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
   const [scorers, setScorers] = useState<{ playerId: string; goals: number }[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (!match) return null;
 
@@ -116,7 +117,31 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
         }
       }
 
-      onSuccess();
+      // 4. Generate Zalo Summary
+      const matchDateObj = new Date(match.match_date);
+      const time = matchDateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = matchDateObj.toLocaleDateString('vi-VN');
+      
+      let scorerText = '';
+      if (scorers.length > 0) {
+        scorerText = '\n🔥 Ghi bàn (FC Daddy):\n';
+        scorers.forEach(s => {
+          const p = players.find(p => p.id === s.playerId);
+          if (p) {
+            scorerText += `- ${p.full_name} (${s.goals} bàn)\n`;
+          }
+        });
+      }
+
+      const summary = `⚽ KẾT QUẢ TRẬN ĐẤU ⚽\n🏆 FC Daddy ${ourScore} - ${oppScore} ${match.opponent}\n📅 Thời gian: ${time} (${dateStr})\n🏟 Sân bóng: ${match.stadium}${scorerText}`;
+      
+      try {
+        await navigator.clipboard.writeText(summary);
+      } catch (err) {
+        console.error("Failed to copy clipboard", err);
+      }
+      
+      setIsSuccess(true);
     } catch (err: any) {
       alert('Đã có lỗi xảy ra: ' + err.message);
       console.error(err);
@@ -124,6 +149,45 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
       setIsSubmitting(false);
     }
   };
+
+  if (isSuccess) {
+    return (
+      <Modal isOpen={isOpen} onClose={() => {
+        setIsSuccess(false);
+        onSuccess();
+      }}>
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
+          <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>Xác nhận thành công!</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            Kết quả trận đấu đã được lưu và copy vào khay nhớ tạm.
+          </p>
+          <button 
+            onClick={() => window.open('https://zalo.me', '_blank')}
+            style={{ 
+              width: '100%', padding: '14px', backgroundColor: '#0068FF', color: 'white', 
+              border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer',
+              marginBottom: '12px'
+            }}
+          >
+            Mở Zalo để dán vào nhóm
+          </button>
+          <button 
+            onClick={() => {
+              setIsSuccess(false);
+              onSuccess();
+            }}
+            style={{ 
+              width: '100%', padding: '14px', backgroundColor: 'transparent', color: 'var(--text-secondary)', 
+              border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer'
+            }}
+          >
+            Đóng
+          </button>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

@@ -1,8 +1,8 @@
 :root {
-  /* Colors - Dark Mode by default */
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e24;
-  --bg-glass: rgba(30, 30, 36, 0.7);
+  /* Colors - Slate Dark Theme */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-glass: rgba(30, 41, 59, 0.7);
   
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;

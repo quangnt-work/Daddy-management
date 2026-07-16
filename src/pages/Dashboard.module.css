@@ -2,62 +2,501 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .header {
-  margin-bottom: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
 }
 
 .title {
   font-size: 2rem;
-  font-weight: 700;
-  color: var(--accent-primary);
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .subtitle {
   color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
-.grid {
+/* LAYOUT GRID */
+.dashboardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--space-lg);
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
 }
 
-.card {
-  padding: var(--space-lg);
+.leftCol, .rightCol {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 24px;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  border-color: var(--accent-secondary);
+/* CARDS */
+.card {
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--accent-secondary);
-}
-
-.statValue {
-  font-size: 2.5rem;
+  font-size: 1rem;
   font-weight: 700;
-  margin-top: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
 }
 
-.section {
-  margin-top: var(--space-xl);
+/* 1. TRẬN ĐẤU TIẾP THEO (NEXT MATCH) */
+.nextMatchCard {
+  background: repeating-linear-gradient(
+    90deg,
+    #3f7035,
+    #3f7035 40px,
+    #37622d 40px,
+    #37622d 80px
+  );
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  color: white;
+  display: flex;
+  flex-direction: column;
 }
 
-.sectionTitle {
-  font-size: 1.5rem;
+.nextMatchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+}
+
+.nextMatchBadge {
+  background-color: #FBBF24;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.nextMatchLeague {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.nextMatchBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+}
+
+.teamSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.teamLogo {
+  width: 80px;
+  height: 80px;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.teamName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.matchCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1.2;
+}
+
+.matchTimeLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  opacity: 0.9;
+  letter-spacing: 1px;
+}
+
+.matchTimeValue {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #FBBF24;
+  line-height: 1;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  margin-bottom: 12px;
+}
+
+.countdownBoxes {
+  display: flex;
+  gap: 8px;
+}
+
+.countdownBox {
+  background: rgba(0,0,0,0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-align: center;
+  min-width: 45px;
+}
+
+.countdownValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.countdownLabel {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.homeBadge { background: #10b981; color: #fff; }
+.awayBadge { background: #f59e0b; color: #fff; }
+
+.nextMatchFooter {
+  background: rgba(0,0,0,0.2);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* 2. THỐNG KÊ TỈ LỆ (DONUT CHART - LAPTOP ONLY) */
+.donutCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px;
+}
+
+.donutChartWrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.donutChart {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+}
+
+/* This ::after creates the hole in the donut */
+.donutChart::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  right: 30px;
+  bottom: 30px;
+  background-color: var(--bg-primary);
+  border-radius: 50%;
+}
+
+.donutInner {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.donutPercent {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.donutLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: var(--space-lg);
-  padding-bottom: var(--space-sm);
-  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.legendDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+/* 3. PHONG ĐỘ GẦN ĐÂY */
+.recentFormRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.formCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.formCircle.W { background-color: #2E7D32; }
+.formCircle.D { background-color: #9E9E9E; }
+.formCircle.L { background-color: #C62828; }
+.formCircle.empty { background-color: var(--bg-secondary); color: var(--text-secondary); }
+
+/* 4. VUA PHÁ LƯỚI */
+.scorersList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scorerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scorerAvatar {
+  position: relative;
+}
+
+.avatarImage {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.rankBadgeSmall {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.rank1 { background-color: #FFD700; } /* Gold */
+.rank2 { background-color: #C0C0C0; } /* Silver */
+.rank3 { background-color: #CD7F32; } /* Bronze */
+
+.scorerInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scorerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scorerName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.scorerGoals {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scorerBarContainer {
+  height: 6px;
+  background-color: var(--bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.scorerBarFill {
+  height: 100%;
+  border-radius: 3px;
+}
+.scorerRow:nth-child(1) .scorerBarFill { background-color: #FFD700; }
+.scorerRow:nth-child(2) .scorerBarFill { background-color: #C0C0C0; }
+.scorerRow:nth-child(3) .scorerBarFill { background-color: #CD7F32; }
+
+/* 5. THÀNH TÍCH ĐỘI (MOBILE ONLY) */
+.mobileStatsCard {
+  display: none; /* Hidden on laptop */
+}
+
+.mobileStatsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.mobileStatBox {
+  padding: 16px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobileStatNumber {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+.mobileStatNumber.win { color: #2E7D32; }
+.mobileStatNumber.draw { color: #9E9E9E; }
+.mobileStatNumber.loss { color: #C62828; }
+
+.mobileStatLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.mobileProgressBar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+
+/* MEDIA QUERIES FOR MOBILE */
+@media (max-width: 1024px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .leftCol, .rightCol {
+    gap: 16px;
+  }
+  
+  .nextMatchBody {
+    padding: 16px 8px;
+    gap: 8px;
+  }
+  
+  .teamLogo {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .teamName {
+    font-size: 0.95rem;
+  }
+  
+  .matchTimeValue {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  
+  .countdownBox {
+    padding: 4px 8px;
+    min-width: 40px;
+  }
+  
+  .countdownValue {
+    font-size: 1rem;
+  }
+  
+  .donutCard {
+    display: none; /* Hide donut chart on mobile */
+  }
+  
+  .mobileStatsCard {
+    display: flex; /* Show mobile stats */
+  }
 }

@@ -5,6 +5,7 @@ import { useAppData } from '../hooks/useAppData';
 import type { Match } from '../hooks/useAppData';
 import Modal from '../components/common/Modal';
 import { ConfirmMatchModal } from '../components/ConfirmMatchModal';
+import MatchCard from '../components/common/MatchCard';
 import { supabase } from '../lib/supabase';
 
 // Helper function to get next Wednesday at 21:00
@@ -25,19 +26,16 @@ const getNextWednesday21h = () => {
   return new Date(d.getTime() - offset).toISOString().slice(0, 16);
 };
 
-const getDynamicStatus = (matchDateStr: string) => {
-  const matchDate = new Date(matchDateStr).getTime();
-  const now = new Date().getTime();
-  if (now < matchDate) return 'Chưa diễn ra';
-  if (now >= matchDate && now < matchDate + 90 * 60000) return 'Đang diễn ra'; // +90 mins
-  return 'Kết thúc';
-};
-
 const Schedule = () => {
   const { matches, players, loading, refetch } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmMatch, setConfirmMatch] = useState<Match | null>(null);
+
+  // Logic mùa giải kép
+  const currentMonth = new Date().getMonth() + 1;
+  const isPreSeason = currentMonth === 6 || currentMonth === 7;
+  const seasonBadgeText = isPreSeason ? 'Giao Hữu 2026' : 'Mùa giải 26/27';
 
   // Form State
   const [formData, setFormData] = useState({
@@ -104,70 +102,14 @@ const Schedule = () => {
         {upcomingMatches.length === 0 && (
           <div style={{ color: 'var(--text-secondary)' }}>Chưa có lịch thi đấu mới</div>
         )}
-        {upcomingMatches.map((match) => {
-          const isHome = match.is_home;
-          const homeTeam = isHome ? 'FC Daddy' : match.opponent;
-          const awayTeam = isHome ? match.opponent : 'FC Daddy';
-          const matchDate = new Date(match.match_date);
-          const timeString = matchDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-          const dateString = matchDate.toLocaleDateString('vi-VN');
-
-          const dynamicStatus = getDynamicStatus(match.match_date);
-          let statusClass = styles.statusUpcoming;
-          let statusText = 'Chưa diễn ra';
-          if (dynamicStatus === 'Đang diễn ra') {
-            statusClass = styles.statusLive;
-            statusText = 'Đang diễn ra';
-          } else if (dynamicStatus === 'Kết thúc') {
-            statusClass = styles.statusFinished;
-            statusText = 'Kết thúc';
-          }
-
-          return (
-            <div key={match.id} className={styles.matchCard}>
-              
-              {/* Header: Status Badge */}
-              <div className={styles.cardHeader}>
-                <div className={`${styles.statusBadge} ${statusClass}`}>
-                  {statusText}
-                </div>
-              </div>
-
-              {/* Body: Teams & Time */}
-              <div className={styles.cardBody}>
-                <div className={styles.teamContainerLeft}>
-                  <span className={styles.teamName}>{homeTeam}</span>
-                  <span className={`${styles.badge} ${styles.homeBadge}`}>Home</span>
-                </div>
-                
-                <div className={styles.matchInfo}>
-                  <div className={styles.time}>{timeString}</div>
-                  <div className={styles.dateAndStadium}>
-                    <span>{dateString}</span>
-                    <span>- {match.stadium}</span>
-                  </div>
-                </div>
-
-                <div className={styles.teamContainerRight}>
-                  <span className={styles.teamName}>{awayTeam}</span>
-                  <span className={`${styles.badge} ${styles.awayBadge}`}>Away</span>
-                </div>
-              </div>
-
-              {/* Footer: Confirm Button */}
-              {dynamicStatus === 'Kết thúc' && (
-                <div className={styles.cardFooter}>
-                  <button 
-                    onClick={() => setConfirmMatch(match)}
-                    className={styles.confirmBtn}
-                  >
-                    Xác nhận
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {upcomingMatches.map((match) => (
+          <MatchCard 
+            key={match.id}
+            match={match}
+            seasonBadgeText={seasonBadgeText}
+            onConfirmMatch={setConfirmMatch}
+          />
+        ))}
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
