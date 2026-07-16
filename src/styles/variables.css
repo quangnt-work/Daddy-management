@@ -1,0 +1,36 @@
+:root {
+  /* Colors - Dark Mode by default */
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e24;
+  --bg-glass: rgba(30, 30, 36, 0.7);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  
+  --accent-primary: #00ff88; /* Neon Green */
+  --accent-secondary: #00d2ff; /* Electric Blue */
+  
+  --border-color: rgba(255, 255, 255, 0.1);
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Z-Index */
+  --z-nav: 100;
+  --z-modal: 1000;
+}
