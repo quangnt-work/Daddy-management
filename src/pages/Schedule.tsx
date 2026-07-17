@@ -7,6 +7,8 @@ import Modal from '../components/common/Modal';
 import { ConfirmMatchModal } from '../components/ConfirmMatchModal';
 import MatchCard from '../components/common/MatchCard';
 import { supabase } from '../lib/supabase';
+import { toast } from 'sonner';
+import { getSeasonInfo } from '../utils/seasonUtils';
 
 // Helper function to get next Wednesday at 21:00
 const getNextWednesday21h = () => {
@@ -32,17 +34,14 @@ const Schedule = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmMatch, setConfirmMatch] = useState<Match | null>(null);
 
-  // Logic mùa giải kép
-  const currentMonth = new Date().getMonth() + 1;
-  const isPreSeason = currentMonth === 6 || currentMonth === 7;
-  const seasonBadgeText = isPreSeason ? 'Giao Hữu 2026' : 'Mùa giải 26/27';
+
 
   // Form State
   const [formData, setFormData] = useState({
     opponent: '',
-    stadium: 'Sân khách',
+    stadium: 'Tuấn Phong',
     match_date: getNextWednesday21h(),
-    is_home: false,
+    is_home: true,
   });
 
   const upcomingMatches = matches.filter(m => m.status !== 'Đã kết thúc');
@@ -54,6 +53,7 @@ const Schedule = () => {
     setIsSubmitting(true);
     try {
       const dateObject = new Date(formData.match_date);
+      const { seasonValue: newSeasonValue } = getSeasonInfo(dateObject);
 
       const { error } = await supabase.from('matches').insert([
         {
@@ -62,27 +62,45 @@ const Schedule = () => {
           match_date: dateObject.toISOString(),
           is_home: formData.is_home,
           status: 'Sắp diễn ra',
-          season: '2024' // Default season
+          season: newSeasonValue
         }
       ]);
 
       if (error) {
-        alert('Lỗi khi thêm lịch đấu: ' + error.message);
+        toast.error('Lỗi khi thêm lịch đấu: ' + error.message);
       } else {
+        toast.success('Thêm lịch đấu thành công!');
         setIsModalOpen(false);
         setFormData({
           opponent: '',
-          stadium: 'Sân khách',
+          stadium: 'Tuấn Phong',
           match_date: getNextWednesday21h(),
-          is_home: false,
+          is_home: true,
         });
         refetch(); // Reload data
       }
     } catch (err) {
       console.error(err);
-      alert('Đã có lỗi xảy ra');
+      toast.error('Đã có lỗi xảy ra');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMatch = async (matchToDelete: Match) => {
+    if (window.confirm(`Bạn có chắc muốn xóa trận đấu với ${matchToDelete.opponent}?`)) {
+      try {
+        const { error } = await supabase.from('matches').delete().eq('id', matchToDelete.id);
+        if (error) {
+          toast.error('Lỗi khi xóa trận đấu: ' + error.message);
+        } else {
+          toast.success('Xóa trận đấu thành công!');
+          refetch();
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Đã có lỗi xảy ra');
+      }
     }
   };
 
@@ -106,8 +124,9 @@ const Schedule = () => {
           <MatchCard 
             key={match.id}
             match={match}
-            seasonBadgeText={seasonBadgeText}
+            seasonBadgeText={getSeasonInfo(match.match_date).seasonBadgeText}
             onConfirmMatch={setConfirmMatch}
+            onDeleteMatch={handleDeleteMatch}
           />
         ))}
       </div>

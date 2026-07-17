@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import Modal from './common/Modal';
 import styles from './ConfirmMatchModal.module.css';
 import { supabase } from '../lib/supabase';
+import { toast } from 'sonner';
 import type { Match, Player } from '../hooks/useAppData';
 
 interface ConfirmMatchModalProps {
@@ -45,7 +46,7 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
       // Giới hạn < 20MB
       const validFiles = files.filter(f => f.size < 20 * 1024 * 1024);
       if (validFiles.length < files.length) {
-        alert('Vui lòng chọn video có dung lượng dưới 20MB. Các file lớn hơn đã bị loại bỏ.');
+        toast.warning('Vui lòng chọn video có dung lượng dưới 20MB. Các file lớn hơn đã bị loại bỏ.');
       }
       setVideoFiles(validFiles);
     }
@@ -70,7 +71,7 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
           
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          alert('Lỗi upload video: ' + uploadError.message);
+          toast.error('Lỗi upload video: ' + uploadError.message);
           continue; // Skip if failed, but continue others
         }
         
@@ -111,7 +112,7 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
           if (p) {
             await supabase
               .from('players')
-              .update({ total_goals: p.total_goals + scorer.goals })
+              .update({ total_goals: (p.total_goals || 0) + scorer.goals })
               .eq('id', p.id);
           }
         }
@@ -143,7 +144,7 @@ export const ConfirmMatchModal = ({ isOpen, onClose, match, players, onSuccess }
       
       setIsSuccess(true);
     } catch (err: any) {
-      alert('Đã có lỗi xảy ra: ' + err.message);
+      toast.error('Đã có lỗi xảy ra: ' + err.message);
       console.error(err);
     } finally {
       setIsSubmitting(false);

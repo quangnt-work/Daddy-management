@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styles from './History.module.css';
 import { useAppData } from '../hooks/useAppData';
 import { MapPin, Target, ChevronDown } from 'lucide-react'; 
+import { getSeasonInfo } from '../utils/seasonUtils';
 
 const History = () => {
   const { matches, matchGoals, loading } = useAppData();
@@ -16,7 +17,7 @@ const History = () => {
 
   if (loading) return <div className={styles.page}>Đang tải...</div>;
 
-  const pastMatches = matches.filter(m => m.status === 'Đã kết thúc');
+  const pastMatches = matches.filter(m => m.status === 'Đã kết thúc' || m.status === 'Kết thúc');
 
   return (
     <div className={styles.page}>
@@ -49,7 +50,7 @@ const History = () => {
               <div className={styles.cardTop} onClick={() => toggleExpand(match.id)}>
                 <div className={styles.cardHeader}>
                   <span className={styles.date}>{matchDate}</span>
-                  <span className={styles.matchTypeBadge}>Giao hữu</span>
+                  <span className={styles.matchTypeBadge}>{match.season || getSeasonInfo(match.match_date).seasonBadgeText}</span>
                 </div>
 
                 <div className={styles.scoreSection}>

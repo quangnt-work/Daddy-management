@@ -4,15 +4,12 @@ import { useAppData } from '../hooks/useAppData';
 import { Award } from 'lucide-react';
 import { GiSoccerKick } from 'react-icons/gi';
 import MatchCard from '../components/common/MatchCard';
+import { getSeasonInfo } from '../utils/seasonUtils';
 
 const Dashboard = () => {
   const { players, matches, loading } = useAppData();
 
-  // Logic mùa giải kép
-  const currentMonth = new Date().getMonth() + 1;
-  const isPreSeason = currentMonth === 6 || currentMonth === 7;
-  const titleText = isPreSeason ? '🔥 Chiến Dịch Giao Hữu Hè 2026' : '🏆 Mùa Giải Chính Thức 26/27';
-  const seasonBadgeText = isPreSeason ? 'Giao Hữu 2026' : 'Mùa giải 26/27';
+  const { titleText } = getSeasonInfo();
 
   // 1. Thống kê W-D-L (Chỉ tính trận Đã kết thúc)
   const formStats = useMemo(() => {
@@ -107,7 +104,7 @@ const Dashboard = () => {
 
           {/* TRẬN ĐẤU TIẾP THEO */}
           {nextMatch ? (
-            <MatchCard match={nextMatch} isDashboardCard={true} seasonBadgeText={seasonBadgeText} />
+            <MatchCard match={nextMatch} isDashboardCard={true} seasonBadgeText={getSeasonInfo(nextMatch.match_date).seasonBadgeText} />
           ) : (
             <div className={styles.card} style={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ color: 'var(--text-secondary)' }}>Chưa có lịch thi đấu tiếp theo</div>

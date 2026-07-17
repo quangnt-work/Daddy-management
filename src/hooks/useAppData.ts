@@ -6,6 +6,7 @@ export interface Player {
   full_name: string;
   jersey_number: number;
   position: string;
+  roles?: string[];
   total_goals: number;
   total_minutes: number;
   avatar_url: string;

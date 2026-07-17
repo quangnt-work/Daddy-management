@@ -1,4 +1,5 @@
 import React from 'react';
+import { Trash2 } from 'lucide-react';
 import styles from './MatchCard.module.css';
 import type { Match } from '../../hooks/useAppData';
 
@@ -6,10 +7,11 @@ interface MatchCardProps {
   match: Match;
   isDashboardCard?: boolean; // If true, it's the next match on dashboard (different badge text/icon)
   onConfirmMatch?: (match: Match) => void;
+  onDeleteMatch?: (match: Match) => void;
   seasonBadgeText: string;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, isDashboardCard, onConfirmMatch, seasonBadgeText }) => {
+const MatchCard: React.FC<MatchCardProps> = ({ match, isDashboardCard, onConfirmMatch, onDeleteMatch, seasonBadgeText }) => {
   const isHome = match.is_home;
   const homeTeam = isHome ? 'FC Daddy' : match.opponent;
   const awayTeam = isHome ? match.opponent : 'FC Daddy';
@@ -46,8 +48,19 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, isDashboardCard, onConfirm
     <div className={styles.matchCard}>
       {/* Header */}
       <div className={styles.matchHeader}>
-        <div className={statusClass}>
-          🔥 {statusText}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className={statusClass}>
+            🔥 {statusText}
+          </div>
+          {onDeleteMatch && (
+            <button 
+              onClick={() => onDeleteMatch(match)}
+              style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '4px' }}
+              title="Xóa trận đấu"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
         </div>
         <div className={styles.matchLeague}>{seasonBadgeText}</div>
       </div>

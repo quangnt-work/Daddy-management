@@ -4,10 +4,12 @@ import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
 import Squad from './pages/Squad';
 import History from './pages/History';
+import { Toaster } from 'sonner';
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" richColors />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />

@@ -15,7 +15,7 @@ const Layout = () => {
     <div className={styles.layout}>
       {/* Desktop Sidebar */}
       <aside className={styles.sidebar}>
-        <div className={styles.logo}>FC DADDY</div>
+        <div className={styles.logo}>FC DADDIES</div>
         <nav className={styles.nav}>
           {navItems.map((item) => (
             <NavLink
