@@ -33,6 +33,7 @@ const Schedule = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmMatch, setConfirmMatch] = useState<Match | null>(null);
+  const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
 
 
 
@@ -46,6 +47,34 @@ const Schedule = () => {
 
   const upcomingMatches = matches.filter(m => m.status !== 'Đã kết thúc');
 
+  const openAddModal = () => {
+    setEditingMatchId(null);
+    setFormData({
+      opponent: '',
+      stadium: 'Tuấn Phong',
+      match_date: getNextWednesday21h(),
+      is_home: true,
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (match: Match) => {
+    setEditingMatchId(match.id);
+
+    // Convert match_date to local datetime-local format
+    const d = new Date(match.match_date);
+    const offset = d.getTimezoneOffset() * 60000;
+    const localIso = new Date(d.getTime() - offset).toISOString().slice(0, 16);
+
+    setFormData({
+      opponent: match.opponent,
+      stadium: match.stadium,
+      match_date: localIso,
+      is_home: match.is_home,
+    });
+    setIsModalOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.opponent || !formData.match_date) return;
@@ -55,29 +84,43 @@ const Schedule = () => {
       const dateObject = new Date(formData.match_date);
       const { seasonValue: newSeasonValue } = getSeasonInfo(dateObject);
 
-      const { error } = await supabase.from('matches').insert([
-        {
+      if (editingMatchId) {
+        // Edit mode
+        const { error } = await supabase.from('matches').update({
           opponent: formData.opponent,
           stadium: formData.stadium,
           match_date: dateObject.toISOString(),
           is_home: formData.is_home,
-          status: 'Sắp diễn ra',
           season: newSeasonValue
-        }
-      ]);
+        }).eq('id', editingMatchId);
 
-      if (error) {
-        toast.error('Lỗi khi thêm lịch đấu: ' + error.message);
+        if (error) {
+          toast.error('Lỗi khi cập nhật lịch đấu: ' + error.message);
+        } else {
+          toast.success('Cập nhật lịch đấu thành công!');
+          setIsModalOpen(false);
+          refetch(); // Reload data
+        }
       } else {
-        toast.success('Thêm lịch đấu thành công!');
-        setIsModalOpen(false);
-        setFormData({
-          opponent: '',
-          stadium: 'Tuấn Phong',
-          match_date: getNextWednesday21h(),
-          is_home: true,
-        });
-        refetch(); // Reload data
+        // Add mode
+        const { error } = await supabase.from('matches').insert([
+          {
+            opponent: formData.opponent,
+            stadium: formData.stadium,
+            match_date: dateObject.toISOString(),
+            is_home: formData.is_home,
+            status: 'Sắp diễn ra',
+            season: newSeasonValue
+          }
+        ]);
+
+        if (error) {
+          toast.error('Lỗi khi thêm lịch đấu: ' + error.message);
+        } else {
+          toast.success('Thêm lịch đấu thành công!');
+          setIsModalOpen(false);
+          refetch(); // Reload data
+        }
       }
     } catch (err) {
       console.error(err);
@@ -87,21 +130,30 @@ const Schedule = () => {
     }
   };
 
-  const handleDeleteMatch = async (matchToDelete: Match) => {
-    if (window.confirm(`Bạn có chắc muốn xóa trận đấu với ${matchToDelete.opponent}?`)) {
-      try {
-        const { error } = await supabase.from('matches').delete().eq('id', matchToDelete.id);
-        if (error) {
-          toast.error('Lỗi khi xóa trận đấu: ' + error.message);
-        } else {
-          toast.success('Xóa trận đấu thành công!');
-          refetch();
+  const handleDeleteMatch = (matchToDelete: Match) => {
+    toast(`Bạn có chắc muốn xóa trận đấu với ${matchToDelete.opponent}?`, {
+      action: {
+        label: 'Xóa',
+        onClick: async () => {
+          try {
+            const { error } = await supabase.from('matches').delete().eq('id', matchToDelete.id);
+            if (error) {
+              toast.error('Lỗi khi xóa trận đấu: ' + error.message);
+            } else {
+              toast.success('Xóa trận đấu thành công!');
+              refetch();
+            }
+          } catch (err) {
+            console.error(err);
+            toast.error('Đã có lỗi xảy ra');
+          }
         }
-      } catch (err) {
-        console.error(err);
-        toast.error('Đã có lỗi xảy ra');
+      },
+      cancel: {
+        label: 'Hủy',
+        onClick: () => { }
       }
-    }
+    });
   };
 
   if (loading) return <div className={styles.page}>Đang tải...</div>;
@@ -110,7 +162,7 @@ const Schedule = () => {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>Lịch thi đấu</h1>
-        <button className={styles.addButton} onClick={() => setIsModalOpen(true)}>
+        <button className={styles.addButton} onClick={openAddModal}>
           <Plus size={20} />
           <span>Thêm lịch đấu</span>
         </button>
@@ -121,31 +173,32 @@ const Schedule = () => {
           <div style={{ color: 'var(--text-secondary)' }}>Chưa có lịch thi đấu mới</div>
         )}
         {upcomingMatches.map((match) => (
-          <MatchCard 
+          <MatchCard
             key={match.id}
             match={match}
             seasonBadgeText={getSeasonInfo(match.match_date).seasonBadgeText}
             onConfirmMatch={setConfirmMatch}
             onDeleteMatch={handleDeleteMatch}
+            onEditMatch={openEditModal}
           />
         ))}
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className={styles.modalTitle}>Thêm Lịch Đấu Mới</h2>
+        <h2 className={styles.modalTitle}>{editingMatchId ? 'Chỉnh sửa Lịch Đấu' : 'Thêm Lịch Đấu Mới'}</h2>
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label>Đội đối thủ</label>
+            <label>Đối thủ</label>
             <input
               type="text"
-              placeholder="VD: FC Vàng Anh"
+              placeholder="VD: FC ..."
               value={formData.opponent}
               onChange={(e) => setFormData({ ...formData, opponent: e.target.value })}
               required
             />
           </div>
           <div className={styles.formGroup}>
-            <label>Thời gian (Mặc định: 21h Thứ 4)</label>
+            <label>Thời gian</label>
             <input
               type="datetime-local"
               value={formData.match_date}
@@ -169,12 +222,12 @@ const Schedule = () => {
               id="is_home"
               checked={formData.is_home}
               onChange={(e) => setFormData({ ...formData, is_home: e.target.checked })}
-              style={{ width: 'auto' }}
+              className={styles.checkbox}
             />
-            <label htmlFor="is_home">Đá sân nhà</label>
+            <label htmlFor="is_home" style={{ cursor: 'pointer', margin: 0 }}>Đá sân nhà</label>
           </div>
           <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-            {isSubmitting ? 'Đang thêm...' : 'Lưu lịch đấu'}
+            {isSubmitting ? 'Đang lưu...' : (editingMatchId ? 'Lưu thay đổi' : 'Lưu lịch đấu')}
           </button>
         </form>
       </Modal>
