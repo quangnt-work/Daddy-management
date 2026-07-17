@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styles from './History.module.css';
 import { useAppData } from '../hooks/useAppData';
-import { MapPin, Target, ChevronDown } from 'lucide-react'; 
+import { MapPin, Target, ChevronDown } from 'lucide-react';
 import { getSeasonInfo } from '../utils/seasonUtils';
 
 const History = () => {
@@ -33,7 +33,7 @@ const History = () => {
           const isWin = match.our_score > match.opponent_score;
           const isLoss = match.our_score < match.opponent_score;
           const isExpanded = expandedIds.has(match.id);
-          
+
           // Nhóm cầu thủ ghi bàn
           const scorers = matchGoals.filter(g => g.match_id === match.id);
           const groupedScorers = scorers.reduce((acc, goal) => {
@@ -46,17 +46,17 @@ const History = () => {
 
           return (
             <div key={match.id} className={styles.matchCard}>
-              
+
               <div className={styles.cardTop} onClick={() => toggleExpand(match.id)}>
                 <div className={styles.cardHeader}>
                   <span className={styles.date}>{matchDate}</span>
-                  <span className={styles.matchTypeBadge}>{match.season || getSeasonInfo(match.match_date).seasonBadgeText}</span>
+                  <span className={styles.matchTypeBadge}>{getSeasonInfo(match.match_date).seasonBadgeText}</span>
                 </div>
 
                 <div className={styles.scoreSection}>
                   <div className={styles.teamBlock}>
                     <div className={`${styles.teamLogo} ${styles.homeLogo}`}>D</div>
-                    <span className={styles.teamName}>FC DADDY</span>
+                    <span className={styles.teamName}>FC DADDIES</span>
                   </div>
 
                   <div className={styles.scoreDisplay}>
@@ -73,9 +73,9 @@ const History = () => {
                   </div>
                 </div>
 
-                <ChevronDown 
-                  size={20} 
-                  className={`${styles.expandIcon} ${isExpanded ? styles.expanded : ''}`} 
+                <ChevronDown
+                  size={20}
+                  className={`${styles.expandIcon} ${isExpanded ? styles.expanded : ''}`}
                 />
               </div>
 
@@ -107,11 +107,11 @@ const History = () => {
                         <div className={styles.scorersTitle}>Highlight Trận đấu</div>
                         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
                           {match.highlight_urls.map((url, idx) => (
-                            <video 
+                            <video
                               key={idx}
-                              src={url} 
-                              controls 
-                              style={{ height: '200px', borderRadius: '8px', flexShrink: 0, backgroundColor: '#000' }} 
+                              src={url}
+                              controls
+                              style={{ height: '200px', borderRadius: '8px', flexShrink: 0, backgroundColor: '#000' }}
                             />
                           ))}
                         </div>
@@ -120,7 +120,7 @@ const History = () => {
                   </div>
                 </div>
               </div>
-              
+
             </div>
           );
         })}
