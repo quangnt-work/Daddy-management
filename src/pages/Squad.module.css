@@ -166,7 +166,8 @@
 }
 
 .formGroup input,
-.formGroup select {
+.formGroup select,
+.formGroup input[type="file"] {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -277,4 +278,27 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+}
+
+/* Avatar Upload */
+.avatarUploadContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.avatarPreview {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.avatarInput {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 8px !important;
 }

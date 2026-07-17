@@ -12,6 +12,9 @@ const Squad = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>('');
+  const [oldAvatarUrl, setOldAvatarUrl] = useState<string>('');
 
   const AVAILABLE_ROLES = ["Cầu thủ", "Thủ quỹ", "Chủ tịch", "HLV"];
 
@@ -39,6 +42,14 @@ const Squad = () => {
     }));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const openEditModal = (player: any) => {
     setEditingPlayerId(player.id);
     setFormData({
@@ -47,6 +58,9 @@ const Squad = () => {
       position: player.position,
       roles: player.roles || ['Cầu thủ'],
     });
+    setOldAvatarUrl(player.avatar_url || '');
+    setAvatarPreviewUrl(player.avatar_url || '');
+    setAvatarFile(null);
     setOpenMenuId(null);
     setIsModalOpen(true);
   };
@@ -54,6 +68,9 @@ const Squad = () => {
   const openAddModal = () => {
     setEditingPlayerId(null);
     setFormData({ full_name: '', jersey_number: '', position: 'Tiền đạo', roles: ['Cầu thủ'] });
+    setOldAvatarUrl('');
+    setAvatarPreviewUrl('');
+    setAvatarFile(null);
     setIsModalOpen(true);
   };
 
@@ -63,6 +80,33 @@ const Squad = () => {
 
     setIsSubmitting(true);
     try {
+      let finalAvatarUrl = oldAvatarUrl;
+
+      // Xử lý upload ảnh nếu có file mới
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, avatarFile);
+        
+        if (uploadError) {
+          toast.error('Lỗi tải ảnh lên: ' + uploadError.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+        finalAvatarUrl = publicUrlData.publicUrl;
+
+        // Xóa ảnh cũ trên storage nếu đang sửa và có ảnh mới
+        if (editingPlayerId && oldAvatarUrl) {
+          const oldFileName = oldAvatarUrl.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('avatars').remove([oldFileName]);
+          }
+        }
+      }
+
       if (editingPlayerId) {
         // Edit mode
         const { error } = await supabase.from('players').update({
@@ -70,6 +114,7 @@ const Squad = () => {
           jersey_number: parseInt(formData.jersey_number),
           position: formData.position,
           roles: formData.roles.length > 0 ? formData.roles : ['Cầu thủ'],
+          avatar_url: finalAvatarUrl,
         }).eq('id', editingPlayerId);
 
         if (error) {
@@ -88,6 +133,7 @@ const Squad = () => {
             position: formData.position,
             roles: formData.roles.length > 0 ? formData.roles : ['Cầu thủ'],
             total_goals: 0,
+            avatar_url: finalAvatarUrl,
           }
         ]);
 
@@ -107,13 +153,19 @@ const Squad = () => {
     }
   };
 
-  const handleDeletePlayer = async (id: string, name: string) => {
-    if (window.confirm(`Bạn có chắc muốn xóa cầu thủ ${name}?`)) {
+  const handleDeletePlayer = async (player: any) => {
+    if (window.confirm(`Bạn có chắc muốn xóa cầu thủ ${player.full_name}?`)) {
       try {
-        const { error } = await supabase.from('players').delete().eq('id', id);
+        const { error } = await supabase.from('players').delete().eq('id', player.id);
         if (error) {
           toast.error('Lỗi khi xóa cầu thủ: ' + error.message);
         } else {
+          // Xóa luôn ảnh avatar nếu có
+          if (player.avatar_url) {
+            const fileName = player.avatar_url.split('/').pop();
+            if (fileName) await supabase.storage.from('avatars').remove([fileName]);
+          }
+          
           toast.success('Xóa cầu thủ thành công!');
           setOpenMenuId(null);
           refetch();
@@ -148,12 +200,15 @@ const Squad = () => {
           return (
             <div key={player.id} className={styles.card}>
               <div className={styles.imageContainer}>
-                {/* Thay thế ảnh cầu thủ bằng Logo (Initials) */}
-                <img 
-                  src={`https://ui-avatars.com/api/?name=${player.full_name}&background=10B981&color=fff&size=120&bold=true`} 
-                  alt={player.full_name} 
-                  className={styles.avatar} 
-                />
+                {player.avatar_url ? (
+                  <img src={player.avatar_url} alt={player.full_name} className={styles.avatar} />
+                ) : (
+                  <img 
+                    src={`https://ui-avatars.com/api/?name=${player.full_name}&background=10B981&color=fff&size=120&bold=true`} 
+                    alt={player.full_name} 
+                    className={styles.avatar} 
+                  />
+                )}
               </div>
               
               <div className={styles.infoContainer}>
@@ -200,7 +255,7 @@ const Squad = () => {
                       <Edit size={14} /> Chỉnh sửa
                     </button>
                     <button 
-                      onClick={() => handleDeletePlayer(player.id, player.full_name)} 
+                      onClick={() => handleDeletePlayer(player)} 
                       className={`${styles.menuItem} ${styles.menuItemDanger}`}
                     >
                       <Trash2 size={14} /> Xóa
@@ -224,6 +279,24 @@ const Squad = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2 className={styles.modalTitle}>Thêm Cầu Thủ Mới</h2>
         <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label>Ảnh đại diện (Tùy chọn)</label>
+            <div className={styles.avatarUploadContainer}>
+              {avatarPreviewUrl ? (
+                <img src={avatarPreviewUrl} alt="Preview" className={styles.avatarPreview} />
+              ) : (
+                <div className={styles.avatarPreview} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                  Ảnh
+                </div>
+              )}
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className={styles.avatarInput}
+              />
+            </div>
+          </div>
           <div className={styles.formGroup}>
             <label>Họ và Tên</label>
             <input 
