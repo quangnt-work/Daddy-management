@@ -34,24 +34,37 @@ export interface MatchGoal {
   players: { full_name: string };
 }
 
+export interface TeamOfSeasonSlot {
+  id: string;
+  season: string;
+  player_id: string;
+  slot: string;
+  formation: string;
+  created_at: string;
+  players: Player; // joined from FK
+}
+
 export const useAppData = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [matchGoals, setMatchGoals] = useState<MatchGoal[]>([]);
+  const [teamOfSeason, setTeamOfSeason] = useState<TeamOfSeasonSlot[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [playersRes, matchesRes, goalsRes] = await Promise.all([
+      const [playersRes, matchesRes, goalsRes, teamRes] = await Promise.all([
         supabase.from('players').select('*').order('jersey_number', { ascending: true }),
         supabase.from('matches').select('*').order('match_date', { ascending: false }),
         supabase.from('match_goals').select('*, players(full_name)'),
+        supabase.from('team_of_season').select('*, players(*)'),
       ]);
 
       if (playersRes.data) setPlayers(playersRes.data);
       if (matchesRes.data) setMatches(matchesRes.data);
       if (goalsRes.data) setMatchGoals(goalsRes.data);
+      if (teamRes.data) setTeamOfSeason(teamRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -63,5 +76,5 @@ export const useAppData = () => {
     fetchData();
   }, []);
 
-  return { players, matches, matchGoals, loading, refetch: fetchData };
+  return { players, matches, matchGoals, teamOfSeason, loading, refetch: fetchData };
 };
